@@ -48,6 +48,40 @@ struct Regexp {
 }
 
 impl Regexp {
+    fn new(input: String) -> Self {
+        let mut graph = Graph::new();
+
+        let start_node = Node {
+            name: "$$$$^^^^ start $$$$^^^^".to_string(), // TODO: don't use magic strings
+        };
+
+        let mut current_node = start_node.clone();
+
+        for character in input.chars() {
+            let node = Node {
+                name: character.to_string(),
+            };
+            graph.add_node(node.clone());
+
+            graph.add_edge(Edge {
+                from: current_node.clone(),
+                symbol: match character {
+                    '.' => RegexpSymbol::Dot,
+                    _ => RegexpSymbol::Letter(character),
+                },
+                to: node.clone(),
+            });
+
+            current_node = node;
+        }
+
+        Regexp {
+            graph,
+            start_node,
+            end_node: current_node,
+        }
+    }
+
     fn match_regexp(&self, input: String) -> bool {
         let mut current_state = &self.start_node;
 
@@ -83,57 +117,13 @@ mod tests {
         // let regular_expression = regexp::from("abc");
         // let regular_expression = vec![RegexpSymbol::Letter('a'), RegexpSymbol::Dot, RegexpSymbol::Letter('c')];
 
-        let mut graph = Graph::new();
-
-        let start_node = Node {
-            name: "start".to_string(),
-        };
-        let end_node = Node {
-            name: "end".to_string(),
-        };
-        let a_node = Node {
-            name: "a".to_string(),
-        };
-        let a_dot_node = Node {
-            name: "a.".to_string(),
-        };
-
-        graph.nodes.insert(start_node.clone());
-        graph.nodes.insert(end_node.clone());
-        graph.nodes.insert(a_node.clone());
-        graph.nodes.insert(a_dot_node.clone());
-
-        graph.edges.insert(Edge {
-            from: start_node.clone(),
-            symbol: RegexpSymbol::Letter('a'),
-            to: a_node.clone(),
-        });
-
-        graph.edges.insert(Edge {
-            from: a_node.clone(),
-            symbol: RegexpSymbol::Dot,
-            to: a_dot_node.clone(),
-        });
-
-        graph.edges.insert(Edge {
-            from: a_dot_node.clone(),
-            symbol: RegexpSymbol::Letter('c'),
-            to: end_node.clone(),
-        });
-
-        let regular_expression = Regexp {
-            graph,
-            start_node,
-            end_node,
-        };
-
         assert_eq!(
-            regular_expression.match_regexp("123abc123".to_string()),
+            Regexp::new("a.c".to_string()).match_regexp("123abc123".to_string()),
             true
         );
 
         assert_eq!(
-            regular_expression.match_regexp("123ac123".to_string()),
+            Regexp::new("a.c".to_string()).match_regexp("123ac123".to_string()),
             false
         );
     }
