@@ -1,5 +1,6 @@
 mod graph;
 use crate::graph::Graph;
+use crate::graph::MathGraph;
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 enum RegexpSymbol {
@@ -21,14 +22,14 @@ struct RexExpEdge {
 }
 
 struct Regexp {
-    graph: Graph<RegExpNode, RexExpEdge>,
+    graph: Box<dyn Graph<RegExpNode, RexExpEdge>>,
     start_node: RegExpNode,
     end_node: RegExpNode,
 }
 
 impl Regexp {
     fn new(input: &str) -> Self {
-        let mut graph = Graph::new();
+        let mut graph = MathGraph::new();
 
         let start_node = RegExpNode {
             name: "".to_string(), // TODO: don't use magic strings
@@ -55,7 +56,7 @@ impl Regexp {
         }
 
         Regexp {
-            graph,
+            graph: Box::new(graph),
             start_node,
             end_node: current_node,
         }
@@ -67,7 +68,7 @@ impl Regexp {
         for character in input.chars() {
             let outer_edges = self
                 .graph
-                .edges
+                .edges()
                 .iter()
                 .filter(|n| n.from == *current_state)
                 .collect::<Vec<&RexExpEdge>>();
