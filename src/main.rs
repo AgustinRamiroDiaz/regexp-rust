@@ -1,4 +1,6 @@
 mod graph;
+use core::panic;
+
 use crate::graph::Graph;
 use crate::graph::MathGraph;
 
@@ -27,8 +29,31 @@ struct Regexp {
     end_node: RegExpNode,
 }
 
+fn parse(input: &str) -> Vec<RegexpSymbol> {
+    let mut glyphs = Vec::new();
+
+    let mut should_escape = false;
+    for glyph in input.chars() {
+        if should_escape {
+            should_escape = false;
+            glyphs.push(RegexpSymbol::Letter(glyph));
+        } else {
+            if glyph == '\\' {
+                should_escape = true;
+            } else {
+                glyphs.push(match glyph {
+                    '.' => RegexpSymbol::Dot,
+                    _ => RegexpSymbol::Letter(glyph),
+                });
+            }
+        }
+    }
+    glyphs
+}
+
 impl Regexp {
     fn new(input: &str) -> Self {
+        let glyphs = parse(input);
         let mut graph = MathGraph::new();
 
         let start_node = RegExpNode {
@@ -37,18 +62,22 @@ impl Regexp {
 
         let mut current_node = start_node.clone();
 
-        for character in input.chars() {
+        for glyph in glyphs {
             let node = RegExpNode {
-                name: format!("{}{}", current_node.name, character),
+                name: format!(
+                    "{}{}",
+                    current_node.name,
+                    match glyph {
+                        RegexpSymbol::Letter(letter) => letter.to_string(),
+                        RegexpSymbol::Dot => ".".to_string(),
+                    }
+                ),
             };
             graph.add_node(node.clone());
 
             graph.add_edge(RexExpEdge {
                 from: current_node.clone(),
-                symbol: match character {
-                    '.' => RegexpSymbol::Dot,
-                    _ => RegexpSymbol::Letter(character),
-                },
+                symbol: glyph,
                 to: node.clone(),
             });
 
@@ -95,7 +124,12 @@ mod tests {
     #[test]
     fn test() {
         assert_eq!(
-            Regexp::new("le peke").match_regexp("le.peke.la.peke le peke"),
+            Regexp::new(r"le\.peke").match_regexp("le.peke.la.peke le peke"),
+            true
+        );
+
+        assert_eq!(
+            Regexp::new(r"le peke").match_regexp("le.peke.la.peke le peke"),
             true
         );
 
