@@ -56,14 +56,14 @@ impl Regexp {
         let mut graph = Graph::new();
 
         let start_node = RegExpNode {
-            name: "$$$$^^^^ start $$$$^^^^".to_string(), // TODO: don't use magic strings
+            name: "".to_string(), // TODO: don't use magic strings
         };
 
         let mut current_node = start_node.clone();
 
         for character in input.chars() {
             let node = RegExpNode {
-                name: character.to_string(),
+                name: format!("{}{}", current_node.name, character),
             };
             graph.add_node(node.clone());
 
@@ -108,7 +108,7 @@ impl Regexp {
             }
         }
 
-        current_state == &self.end_node
+        *current_state == self.end_node
     }
 }
 
@@ -118,11 +118,24 @@ mod tests {
 
     #[test]
     fn test() {
+        assert_eq!(
+            Regexp::new("le peke").match_regexp("le.peke.la.peke le peke"),
+            true
+        );
+
+        assert_eq!(Regexp::new("abcde").match_regexp("123abcd123abcde"), true);
+
         assert_eq!(Regexp::new("a.c").match_regexp("123abc123"), true);
 
-        assert_eq!(Regexp::new("a.c").match_regexp("123ac123"), false);
+        assert_eq!(
+            Regexp::new("le peke").match_regexp("le.peke.la.peke le-peke"),
+            false
+        );
 
-        assert_eq!(Regexp::new("a.c").match_regexp("123ac123"), false);
+        assert_eq!(
+            Regexp::new("le.peke").match_regexp("le.peke.la.peke le-peke"),
+            true
+        );
     }
 }
 
