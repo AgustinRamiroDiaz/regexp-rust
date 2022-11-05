@@ -52,7 +52,7 @@ struct Regexp {
 }
 
 impl Regexp {
-    fn new(input: String) -> Self {
+    fn new(input: &str) -> Self {
         let mut graph = Graph::new();
 
         let start_node = RegExpNode {
@@ -86,7 +86,7 @@ impl Regexp {
         }
     }
 
-    fn match_regexp(&self, input: String) -> bool {
+    fn match_regexp(&self, input: &str) -> bool {
         let mut current_state = &self.start_node;
 
         for character in input.chars() {
@@ -118,18 +118,11 @@ mod tests {
 
     #[test]
     fn test() {
-        // let regular_expression = regexp::from("abc");
-        // let regular_expression = vec![RegexpSymbol::Letter('a'), RegexpSymbol::Dot, RegexpSymbol::Letter('c')];
+        assert_eq!(Regexp::new("a.c").match_regexp("123abc123"), true);
 
-        assert_eq!(
-            Regexp::new("a.c".to_string()).match_regexp("123abc123".to_string()),
-            true
-        );
+        assert_eq!(Regexp::new("a.c").match_regexp("123ac123"), false);
 
-        assert_eq!(
-            Regexp::new("a.c".to_string()).match_regexp("123ac123".to_string()),
-            false
-        );
+        assert_eq!(Regexp::new("a.c").match_regexp("123ac123"), false);
     }
 }
 
