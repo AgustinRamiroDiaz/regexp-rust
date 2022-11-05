@@ -1,4 +1,5 @@
-use std::collections::HashSet;
+mod graph;
+use crate::graph::Graph;
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 enum RegexpSymbol {
@@ -17,32 +18,6 @@ struct RexExpEdge {
     from: RegExpNode,
     symbol: RegexpSymbol,
     to: RegExpNode,
-}
-
-struct Graph<Node, Edge> {
-    nodes: HashSet<Node>,
-    edges: HashSet<Edge>,
-}
-
-impl<Node, Edge> Graph<Node, Edge>
-where
-    Node: Eq + std::hash::Hash,
-    Edge: Eq + std::hash::Hash,
-{
-    fn new() -> Graph<Node, Edge> {
-        Graph {
-            nodes: HashSet::new(),
-            edges: HashSet::new(),
-        }
-    }
-
-    fn add_node(&mut self, node: Node) {
-        self.nodes.insert(node);
-    }
-
-    fn add_edge(&mut self, edge: Edge) {
-        self.edges.insert(edge);
-    }
 }
 
 struct Regexp {
