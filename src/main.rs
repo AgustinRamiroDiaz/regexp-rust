@@ -8,24 +8,28 @@ enum RegexpSymbol {
 
 // TODO: remove copy and use references
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-struct Node {
+struct RegExpNode {
     name: String,
 }
 
 #[derive(Debug, Eq, PartialEq, Hash)]
-struct Edge {
-    from: Node,
+struct RexExpEdge {
+    from: RegExpNode,
     symbol: RegexpSymbol,
-    to: Node,
+    to: RegExpNode,
 }
 
-struct Graph {
+struct Graph<Node, Edge> {
     nodes: HashSet<Node>,
     edges: HashSet<Edge>,
 }
 
-impl Graph {
-    fn new() -> Graph {
+impl<Node, Edge> Graph<Node, Edge>
+where
+    Node: Eq + std::hash::Hash,
+    Edge: Eq + std::hash::Hash,
+{
+    fn new() -> Graph<Node, Edge> {
         Graph {
             nodes: HashSet::new(),
             edges: HashSet::new(),
@@ -42,28 +46,28 @@ impl Graph {
 }
 
 struct Regexp {
-    graph: Graph,
-    start_node: Node,
-    end_node: Node,
+    graph: Graph<RegExpNode, RexExpEdge>,
+    start_node: RegExpNode,
+    end_node: RegExpNode,
 }
 
 impl Regexp {
     fn new(input: String) -> Self {
         let mut graph = Graph::new();
 
-        let start_node = Node {
+        let start_node = RegExpNode {
             name: "$$$$^^^^ start $$$$^^^^".to_string(), // TODO: don't use magic strings
         };
 
         let mut current_node = start_node.clone();
 
         for character in input.chars() {
-            let node = Node {
+            let node = RegExpNode {
                 name: character.to_string(),
             };
             graph.add_node(node.clone());
 
-            graph.add_edge(Edge {
+            graph.add_edge(RexExpEdge {
                 from: current_node.clone(),
                 symbol: match character {
                     '.' => RegexpSymbol::Dot,
@@ -91,7 +95,7 @@ impl Regexp {
                 .edges
                 .iter()
                 .filter(|n| n.from == *current_state)
-                .collect::<Vec<&Edge>>();
+                .collect::<Vec<&RexExpEdge>>();
 
             for edge in outer_edges {
                 if edge.symbol == RegexpSymbol::Letter(character) {
